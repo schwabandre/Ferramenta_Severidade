@@ -1,32 +1,214 @@
 <!DOCTYPE html>
-<html lang="en" lang="pt-br">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>FinOps</title>
-</head>
-<body>
+  <meta charset="UTF-8">
+  <title>FinOps</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+        <style>
+            /* Estilos para a tabela */
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
 
-<!--botar valores e variaveis-->
+            table th,
+            table td {
+              padding: 8px;
+              border: 1px solid black;
+            }
 
-        <p>Logo...</p>
-        <p>Dados</p>
+            /* Estilos para o formulário */
+            form {
+              margin-bottom: 20px;
+            }
 
+            th{
+              border-radius: 10px;
+            }
+            
+            td{
+              border-radius: 10px;
+            }
 
-            <p>Nome do Cliente</p>
+            label {
+              display: block;
+              margin-bottom: 5px;
+              font-style: garamond;
+            }
 
-            <p>Quantidade Recomendação:</p>
+            input {
+              padding: 8px;
+              margin-bottom: 10px;
+              border-radius: 10px;
+              box-shadow: 1px 1px 2px #333333;
+              background: #cccccc;
+              border: 1px solid #000;
+              width: 200px;
+            }
 
-            <p>>Consumo mês anterior:</p>
+            input:hover{
+              background: #ffffff;
+              border: 1px solid #990000;
+            }
 
-            <p>Valor Recomendação:</p>
+            button {
+              padding: 8px 16px;
+              border-radius: 10px;
+            }
 
-            <p>Nome da Recomendação:</p>
+            /* Estilos para os cabeçalhos */
 
-            <button>Enter</button>
+            header{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f31515;
+                padding: 20px;
+                border-radius: 10px;
 
-            <p>Aparecer gráfico</p>
+            }
 
-    <p>gerar tabela com cores</p>
+            header h1{
+                margin: 0;
 
-</body>
+            }
+
+            hearder img{
+                max-height: 50px;
+
+            }
+
+            nav{
+                display: flex;
+                gap: 10px;
+
+            }
+
+            nav a{
+                text-decoration: none;
+                color: #333;
+                font-weight: bold;
+            }
+
+            h1, h2 {
+              margin-bottom: 10px;
+            }
+
+            h2 {
+              margin: center;
+            }
+
+            /* Estilos para as classes personalizadas */
+            .baixa {
+              color: green;
+            }
+
+            .media {
+              color: yellow;
+            }
+
+            .alta {
+              color: orange;
+            }
+
+            .critica {
+              color: red;
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <!--botar valores e variaveis-->
+        <header>
+
+            <h1>FinOps</h1>
+            <img src="" alt="Logo Finops">
+
+            <nav>
+                <a href="">Segurança</a>
+                <a href="">Usuário</a>
+                <a href="">Coisa</a>
+            </nav>
+
+        </header>
+
+        <section>
+            <h2>Dados</h2>
+
+            <form>
+                <label for="nome">Nome do Cliente:</label>
+                <input type="text" id="nome" name="nome" required>
+
+                <label for="quantidade">Quantidade de Recomendação:</label>
+                <input type="number" id="quantidade" name="quantidade" required>
+
+                <label for="consumo">Consumo mês anterior:</label>
+                <input type="number" id="consumo" name="consumo" required>
+
+                <label for="valor_reco">Valor Recomendação:</label>
+                <input type="number" id="valor_reco" name="valor_reco" required>
+
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+        <section>
+            <h2>Tabela</h2>
+            <table id="tabela-dados">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Severidade</th>
+                        <th>Valor Recomendação</th>
+                        <th>Consumo mês Anterior</th>
+                        <th>Porcentagem de diminuição</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <script>
+            $(document).ready(function () {
+                var tabela = $('#tabela-dados').DataTable();
+
+                $('form').submit(function (event) {
+                    event.preventDefault(); // Evita o envio do formulário
+
+                    // Obtenha os valores do formulário
+                    var valorReco = parseFloat($('#valor_reco').val());
+                    var consumo = parseFloat($('#consumo').val());
+
+                    // Faça o cálculo com base nos valores do formulário
+                    var consumoSeveridade = consumo / 100;
+                    var recoSeveridade = valorReco / 100;
+                    var severidade = consumoSeveridade - recoSeveridade;
+                    var severidadePorcentagem = Math.abs(severidade) * 100;
+
+                    //Limpa o conteúdo da tabela
+                    tabela.clear();
+
+                    var rowData = ['Cliente', severidadePorcentagem.toFixed(2) + '%', valorReco.toFixed(2) + '%', consumo, ''];
+                    tabela.row.add(rowData).draw();
+
+                    // Verifica se o resultado é alto ou baixo e adiciona a classe apropriada
+                    var rowNode = tabela.row(':last').node();
+                    if (severidadePorcentagem < 20) {
+                        $(rowNode).addClass('baixa');
+                    } else if (severidadePorcentagem >= 20 && severidadePorcentagem < 45) {
+                        $(rowNode).addClass('media');
+                    } else if (severidadePorcentagem >= 45 && severidadePorcentagem < 65) {
+                        $(rowNode).addClass('alta');
+                    } else {
+                        $(rowNode).addClass('critica');
+                    }
+                });
+            });
+        </script>
+    </body>
 </html>
+
+
