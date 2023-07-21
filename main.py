@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 #Função -> O que você quer exibir naquela página
 @app.route("/")
-def homepage():
+def finops():
     return render_template("finops.html")
 
 @app.route("/segurança")
