@@ -144,13 +144,30 @@
                 <input type="text" id="nome" name="nome" required>
 
                 <label for="quantidade">Quantidade de Recomendação:</label>
-                <input type="number" id="quantidade" name="quantidade" required>
+                <input type="number" id="quantidade" min="1" value="1">
+                <button id="createInputs">Criar Inputs</button>
+                <div id="inputContainer"></div>
+                <script>
+                  document.getElementById("createInputs").addEventListener("click", function(){
+                    var numInputs = parseInt(document.getElementById("numInputs").value);
+                    var inputContainer = document.getElementById("inputContainer");
+
+                    inputContainer.innerHTML = ""; //Limpa o conteudo anterior
+
+                    for (var i = 0; i < quantidade; i++){
+                      var input = document.createElement("input");
+                      input.type = "text";
+                      input.placeholder = "Input " + (i + 1);
+                      inputContainer.appendChild(input);
+                    }
+                  });
+                </script>
 
                 <label for="consumo">Consumo mês anterior:</label>
-                <input type="number" id="consumo" name="consumo" required>
+                <input type="number" id="consumo" name="consumo">
 
                 <label for="valor_reco">Valor Recomendação:</label>
-                <input type="number" id="valor_reco" name="valor_reco" required>
+                <input type="number" id="valor_reco" name="valor_reco" >
 
                 <button type="submit">Enviar</button>
             </form>
@@ -173,39 +190,45 @@
 
         <script>
             $(document).ready(function () {
-                var tabela = $('#tabela-dados').DataTable();
+              var tabela = $('#tabela-dados').DataTable();
 
-                $('form').submit(function (event) {
-                    event.preventDefault(); // Evita o envio do formulário
+              $('form').submit(function (event) {
+                event.preventDefault(); // Evita o envio do formulário
 
-                    // Obtenha os valores do formulário
-                    var valorReco = parseFloat($('#valor_reco').val());
-                    var consumo = parseFloat($('#consumo').val());
+               // Obtenha os valores do formulário
+               var nomeCliente = $('#nome').val();
+               var quantidadeRecomendacoes = parseInt($('#quantidade').val);
+               var valorReco = parseFloat($('#valor_reco').val());
+               var consumo = parseFloat($('#consumo').val());
 
-                    // Faça o cálculo com base nos valores do formulário
-                    var consumoSeveridade = consumo / 100;
-                    var recoSeveridade = valorReco / 100;
-                    var severidade = consumoSeveridade - recoSeveridade;
-                    var severidadePorcentagem = Math.abs(severidade) * 100;
+                // Faça o cálculo com base nos valores do formulário
+                var severidade = (valorReco / consumo) *100;
+                
 
-                    //Limpa o conteúdo da tabela
-                    tabela.clear();
+                //Limpa o conteúdo da tabela
+               tabela.clear();
 
-                    var rowData = ['Cliente', severidadePorcentagem.toFixed(2) + '%', valorReco.toFixed(2) + '%', consumo, ''];
-                    tabela.row.add(rowData).draw();
+                var rowData = [
+                  $('#nome').val(),
+                  severidade.toFixed(2) + '%',
+                  valorReco.toFixed(2) + 'R$',
+                  consumo,
+                  ''
+                ];
+                tabela.row.add(rowData).draw();
 
-                    // Verifica se o resultado é alto ou baixo e adiciona a classe apropriada
-                    var rowNode = tabela.row(':last').node();
-                    if (severidadePorcentagem < 20) {
-                        $(rowNode).addClass('baixa');
-                    } else if (severidadePorcentagem >= 20 && severidadePorcentagem < 45) {
-                        $(rowNode).addClass('media');
-                    } else if (severidadePorcentagem >= 45 && severidadePorcentagem < 65) {
-                        $(rowNode).addClass('alta');
-                    } else {
-                        $(rowNode).addClass('critica');
-                    }
-                });
+                 // Verifica a severidade e aplica a classe apropriada
+                  var rowNode = tabela.row(':last').node();
+                  if (severidade < 5) {
+                      $(rowNode).addClass('baixa');
+                  } else if (severidade >= 6 && severidade < 7) {
+                      $(rowNode).addClass('media');
+                  } else if (severidade >= 8 && severidade < 9) {
+                      $(rowNode).addClass('alta');
+                  } else {
+                      $(rowNode).addClass('critica');
+                  }
+              });
             });
         </script>
     </body>
