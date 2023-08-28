@@ -1,2 +1,2 @@
-# SOLO_Ferramenta
+# Ferramenta_Severidade
 Ferramenta FinOps Severidade
