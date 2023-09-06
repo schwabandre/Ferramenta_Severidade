@@ -103,19 +103,19 @@
 
             /* Estilos para as classes personalizadas */
             .baixa {
-              color: green;
+              background-color: green;
             }
 
             .media {
-              color: yellow;
+              background-color: yellow;
             }
 
             .alta {
-              color: orange;
+              background-color: orange;
             }
 
             .critica {
-              color: red;
+              background-color: red;
             }
 
         </style>
@@ -146,28 +146,27 @@
                 <label for="quantidade">Quantidade de Recomendação:</label>
                 <input type="number" id="quantidade" min="1" value="1">
                 <button id="createInputs">Criar Inputs</button>
-                <div id="inputContainer"></div>
+                <div id="valorRecoContainer"></div>
                 <script>
                   document.getElementById("createInputs").addEventListener("click", function(){
-                    var numInputs = parseInt(document.getElementById("numInputs").value);
-                    var inputContainer = document.getElementById("inputContainer");
+                    var quantidade = parseInt(document.getElementById("quantidade").value);
+                    var valorRecoContainer = document.getElementById("valorRecoContainer");
 
-                    inputContainer.innerHTML = ""; //Limpa o conteudo anterior
+                    valorRecoContainer.innerHTML = ''; //Limpa o conteudo anterior
 
                     for (var i = 0; i < quantidade; i++){
-                      var input = document.createElement("input");
-                      input.type = "text";
-                      input.placeholder = "Input " + (i + 1);
-                      inputContainer.appendChild(input);
+
+                      //Cria campos de entrada para valores de recomendação dinamicamente
+                      var valorRecoInput = document.createElement("input");
+                      valorRecoInput.type = "number";
+                      valorRecoInput.placeholder = "Valor Recomendação " + (i + 1);
+                      valorRecoContainer.appendChild(valorRecoInput);
                     }
                   });
                 </script>
 
                 <label for="consumo">Consumo mês anterior:</label>
                 <input type="number" id="consumo" name="consumo">
-
-                <label for="valor_reco">Valor Recomendação:</label>
-                <input type="number" id="valor_reco" name="valor_reco" >
 
                 <button type="submit">Enviar</button>
             </form>
@@ -178,10 +177,10 @@
                 <thead>
                     <tr>
                         <th>Cliente</th>
-                        <th>Severidade</th>
+                        <th>Porcentagem de diminuição</th>
                         <th>Valor Recomendação</th>
                         <th>Consumo mês Anterior</th>
-                        <th>Porcentagem de diminuição</th>
+                        <th>Severidade</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -189,49 +188,72 @@
         </section>
 
         <script>
-            $(document).ready(function () {
-              var tabela = $('#tabela-dados').DataTable();
-
-              $('form').submit(function (event) {
-                event.preventDefault(); // Evita o envio do formulário
-
-               // Obtenha os valores do formulário
-               var nomeCliente = $('#nome').val();
-               var quantidadeRecomendacoes = parseInt($('#quantidade').val);
-               var valorReco = parseFloat($('#valor_reco').val());
-               var consumo = parseFloat($('#consumo').val());
-
+          $(document).ready(function () {
+            var tabela = $('#tabela-dados').DataTable();
+        
+            $('form').submit(function (event) {
+              event.preventDefault(); // Evita o envio do formulário
+        
+              // Obtenha os valores do formulário
+              var nomeCliente = $('#nome').val();
+              var quantidadeRecomendacoes = parseInt($('#quantidade').val());
+              var consumo = parseFloat($('#consumo').val());
+        
+              // Limpa o conteúdo da tabela
+              tabela.clear();
+        
+              var row; // Declare a variável row aqui
+        
+              // Loop para calcular severidade e adicionar dados à tabela
+              for (var i = 0; i < quantidadeRecomendacoes; i++) {
+                var valorReco = parseFloat($('#valorRecoContainer input:eq(' + i + ')').val());
+        
                 // Faça o cálculo com base nos valores do formulário
-                var severidade = (valorReco / consumo) *100;
-                
-
-                //Limpa o conteúdo da tabela
-               tabela.clear();
-
+                var severidade = (valorReco / consumo) * 100;
+        
+                // Determine o texto com base na severidade
+                var severidadeTexto = '';
+                if (severidade < 5) {
+                  severidadeTexto = 'baixa';
+                } else if (severidade >= 5 && severidade < 7) {
+                  severidadeTexto = 'media';
+                } else if (severidade >= 7 && severidade < 9) {
+                  severidadeTexto = 'alta';
+                } else if (severidade >= 9){
+                  severidadeTexto = 'critica';
+                }
+        
+                // Crie uma linha de dados com severidade
                 var rowData = [
-                  $('#nome').val(),
-                  severidade.toFixed(2) + '%',
+                  nomeCliente,
+                  severidade.toFixed(2) + '%', // Adicione a severidade como uma coluna
                   valorReco.toFixed(2) + 'R$',
                   consumo,
-                  ''
+                  severidadeTexto, // Adicione o texto de severidade como a última coluna
                 ];
-                tabela.row.add(rowData).draw();
-
-                 // Verifica a severidade e aplica a classe apropriada
-                  var rowNode = tabela.row(':last').node();
-                  if (severidade < 5) {
-                      $(rowNode).addClass('baixa');
-                  } else if (severidade >= 6 && severidade < 7) {
-                      $(rowNode).addClass('media');
-                  } else if (severidade >= 8 && severidade < 9) {
-                      $(rowNode).addClass('alta');
-                  } else {
-                      $(rowNode).addClass('critica');
-                  }
-              });
+        
+                // Adicione a linha à tabela
+                row = tabela.row.add(rowData).draw().node();
+        
+                // Adicione a classe de estilo à célula de severidadeTexto com base no valor
+                var cell = tabela.cell(row, 4); // 4 é o índice da coluna severidadeTexto
+                cell.node().classList.add(severidadeTexto);
+        
+                // Adicione classes de cor diretamente com base no valor de severidadeTexto
+                if (severidadeTexto === 'baixa') {
+                  cell.node().classList.add('baixa');
+                } else if (severidadeTexto === 'media') {
+                  cell.node().classList.add('media');
+                } else if (severidadeTexto === 'alta') {
+                  cell.node().classList.add('alta');
+                } else if (severidadeTexto === 'critica') {
+                  cell.node().classList.add('critica');
+                }
+              }
             });
+          });
         </script>
+        
     </body>
 </html>
-
 
